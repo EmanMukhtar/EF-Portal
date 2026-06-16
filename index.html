@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EF Client Portal  Windbrook Solutions</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-logo">Windbrook Solutions</span>
+      <span class="topbar-sub">Client Portal</span>
+    </div>
+    <span class="topbar-quarter" id="topbar-quarter">Q2 2026</span>
+  </header>
+
+  <!-- ══ PAGE 1: CLIENT LIST ══════════════════════════════════ -->
+  <div id="page-client-list" class="page active">
+    <div class="client-list-page">
+      <div class="page-eyebrow">Active Clients</div>
+      <h1 class="page-title">Report Preparation</h1>
+      <p class="page-subtitle">Select a client to enter quarterly balances and generate their SACS and TCC reports.</p>
+      <div class="client-grid" id="client-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 2: DATA ENTRY ════════════════════════════════════ -->
+  <div id="page-data-entry" class="page">
+    <div class="data-entry-page">
+
+      <!-- Header -->
+      <div class="de-header">
+        <button class="de-back" onclick="navigateTo('client-list')">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+          </svg>
+          All Clients
+        </button>
+        <div>
+          <span class="de-client-title" id="de-client-name">—</span>
+          <span class="de-quarter-tag" id="de-quarter"> &nbsp;·&nbsp; Q2 2026 Prep</span>
+        </div>
+        <div class="de-actions">
+          <!-- intentionally minimal — generate btn is in preview pane -->
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar-wrap">
+        <div class="progress-steps">
+          <div class="progress-step active">
+            <div class="step-circle">1</div>
+            Enter Balances
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">2</div>
+            Review & Generate
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">3</div>
+            Download PDFs
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Split Pane -->
+      <div class="de-split">
+
+        <!-- LEFT: Form -->
+        <div class="de-form-pane">
+          <div id="form-sections">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT: Preview -->
+        <div class="de-preview-pane">
+          <div>
+            <div class="preview-label">
+              <span class="preview-label-dot"></span>
+              Live SACS Preview
+            </div>
+            <div class="sacs-preview" id="sacs-live-preview">
+              <!-- SVG updated by JS -->
+            </div>
+          </div>
+
+          <div>
+            <div class="preview-label" style="margin-top:8px">Calculated Totals</div>
+            <div id="live-calcs" style="display:flex;flex-direction:column;gap:6px">
+              <div class="calc-row">
+                <span class="calc-label">Monthly Excess</span>
+                <span class="calc-value positive" id="lc-excess">—</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-label">Reserve Target</span>
+                <span class="calc-value" id="lc-target">—</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-label">Est. Net Worth</span>
+                <span class="calc-value" id="lc-networth">—</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-label">Total Liabilities</span>
+                <span class="calc-value text-red" id="lc-liabilities">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto">
+            <button class="generate-btn" id="generate-btn" onclick="generateReport()" disabled>
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"/>
+              </svg>
+              Generate SACS + TCC Reports
+            </button>
+            <p class="fields-remaining" id="fields-remaining">Enter balances above to continue</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 3: REPORT PREVIEW ═══════════════════════════════ -->
+  <div id="page-report" class="page">
+    <div class="report-page">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+          <button class="de-back" onclick="navigateTo('data-entry')" style="margin-bottom:6px">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+            </svg>
+            Back to Data Entry
+          </button>
+          <div style="font-size:18px;font-weight:700;color:var(--navy)" id="report-client-name">—</div>
+        </div>
+        <div class="report-actions">
+          <button class="btn-secondary" onclick="downloadSACS()">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+            Download SACS
+          </button>
+          <button class="btn-secondary" onclick="downloadTCC()">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+            Download TCC
+          </button>
+          <button class="btn-primary" onclick="downloadBoth()">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+            Download Both PDFs
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="report-tabs">
+        <button class="report-tab active" id="tab-sacs" onclick="switchReportTab('sacs')">
+          SACS: Cash Flow
+        </button>
+        <button class="report-tab" id="tab-tcc" onclick="switchReportTab('tcc')">
+          TCC: Net Worth
+        </button>
+      </div>
+
+      <!-- SACS Content -->
+      <div class="report-content active" id="content-sacs">
+        <div class="pdf-report-wrap">
+          <div id="sacs-report">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TCC Content -->
+      <div class="report-content" id="content-tcc">
+        <div class="pdf-report-wrap">
+          <div id="tcc-report">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast">Generating report</div>
+
+  <!-- SCRIPTS -->
+  <script src="data/clients.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Extend onAfterInput to also refresh live calc panel
+    const _baseOnAfterInput = onAfterInput;
+    window.onAfterInput = function() {
+      _baseOnAfterInput();
+      if (!App.currentClient) return;
+      const client = App.currentClient;
+      const vals = getEffectiveVals(client);
+      const sacs = calcSACS(client, vals);
+      const tcc = calcTCC(client, vals);
+      const excess = sacs.inflow - sacs.outflow;
+      const el = (id) => document.getElementById(id);
+      if (el('lc-excess')) el('lc-excess').textContent = fmt(excess);
+      if (el('lc-target')) el('lc-target').textContent = fmt(sacs.reserveTarget);
+      if (el('lc-networth')) el('lc-networth').textContent = fmt(tcc.grand);
+      if (el('lc-liabilities')) el('lc-liabilities').textContent = fmt(tcc.liabilities);
+    };
+  </script>
+
+</body>
+</html>
